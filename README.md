@@ -1,12 +1,17 @@
-# slack-irc [![Join the chat at https://gitter.im/ekmartin/slack-irc](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ekmartin/slack-irc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build status](https://ci.frigg.io/badges/ekmartin/slack-irc/)](https://ci.frigg.io/ekmartin/slack-irc/last/) [![Coverage status](https://ci.frigg.io/badges/coverage/ekmartin/slack-irc/)](https://ci.frigg.io/ekmartin/slack-irc/last/)
+# slack-irc [![Join the chat at https://gitter.im/ekmartin/slack-irc](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ekmartin/slack-irc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/ekmartin/slack-irc.svg?branch=travis)](https://travis-ci.org/ekmartin/slack-irc) [![Coverage Status](https://coveralls.io/repos/github/ekmartin/slack-irc/badge.svg?branch=master)](https://coveralls.io/github/ekmartin/slack-irc?branch=master)
 
-> Connects Slack and IRC channels by sending messages back and forth. Read more [here](https://ekmartin.com/2015/slack-irc/).
+> Connects Slack and IRC channels by sending messages back and forth. Read more [here](https://ekmartin.com/2015/slack-irc).
 
 ## Demo
 ![Slack IRC](http://i.imgur.com/58H6HgO.gif)
 
 ## Installation and usage
-Either by installing through npm:
+*Note*: [node-irc](https://github.com/martynsmith/node-irc/)
+uses icu-charset-detector as an optional dependency,
+which might fail to install depending on how you've installed Node.js.
+slack-irc works fine anyhow though, so no need to worry.
+
+Installing with npm:
 ```bash
 $ npm install -g slack-irc
 $ slack-irc --config /path/to/config.json
@@ -15,9 +20,10 @@ $ slack-irc --config /path/to/config.json
 or by cloning the repository:
 
 ```bash
-In the repository folder:
+$ git clone https://github.com/ekmartin/slack-irc.git && cd slack-irc
 $ npm install
-$ node index.js --config /path/to/config.json
+$ npm run build
+$ npm start -- --config /path/to/config.json # Note the extra -- here
 ```
 
 It can also be used as a node module:
@@ -48,6 +54,7 @@ slack-irc also supports invite-only IRC channels, and will join any channels it'
 as long as they're present in the channel mapping.
 
 ### Example configuration
+Valid JSON cannot contain comments, so remember to remove them first!
 ```js
 [
   // Bot 1 (minimal configuration):
@@ -65,6 +72,9 @@ as long as they're present in the channel mapping.
     "nickname": "test",
     "server": "irc.bottest.org",
     "token": "slacktoken", // Your bot user's token
+    "avatarUrl": "https://robohash.org/$username.png?size=48x48", // Set to false to disable Slack avatars
+    "slackUsernameFormat": "<$username>", // defaults to "$username (IRC)"; "$username" overides so there's no suffix or prefix at all
+    "ircUsernameFormat": "<$username> ", // defaults to "<$username>"; "$username" overides so there's no suffix or prefix at all
     "autoSendCommands": [ // Commands that will be sent on connect
       ["PRIVMSG", "NickServ", "IDENTIFY password"],
       ["MODE", "test", "+x"],
@@ -80,20 +90,48 @@ as long as they're present in the channel mapping.
     },
     // Makes the bot hide the username prefix for messages that start
     // with one of these characters (commands):
-    "commandCharacters": ["!", "."]
+    "commandCharacters": ["!", "."],
+    // Prevent messages posted by Slackbot (e.g. Slackbot responses)
+    // from being posted into the IRC channel:
+    "muteSlackbot": true, // Off by default
+    // Sends messages to Slack whenever a user joins/leaves an IRC channel:
+    "ircStatusNotices": {
+      "join": false, // Don't send messages about joins
+      "leave": true
+    },
+    // Prevent messages posted by users on Slack/IRC from being forwarded:
+    "muteUsers": {
+      "irc": ["irc-user"],
+      "slack": ["slack-user"]
+    }
   }
 ]
 ```
 
 `ircOptions` is passed directly to node-irc ([available options](http://node-irc.readthedocs.org/en/latest/API.html#irc.Client)).
 
-## Tests
+## Personal IRC Client
+slack-irc strengths mainly lie in many-to-many communication from Slack to IRC (and vice versa),
+and is thus not very suitable as a makeshift IRC client for one user. If that's
+what you need, check out
+[aeirola/slack-irc-client](https://github.com/aeirola/slack-irc-client),
+which adds an array of features to solve this problem as smoothly as possible.
+
+## Development
+To be able to use the latest ES2015+ features, slack-irc uses [Babel](https://babeljs.io).
+
+Build the source with:
+```bash
+$ npm run build
+```
+
+### Tests
 Run the tests with:
 ```bash
 $ npm test
 ```
 
-## Style Guide
+### Style Guide
 slack-irc uses a slightly modified version of the
 [Airbnb Style Guide](https://github.com/airbnb/javascript/tree/master/es5).
 [ESLint](http://eslint.org/) is used to make sure this is followed correctly, which can be run with:
@@ -106,15 +144,3 @@ The deviations from the Airbnb Style Guide can be seen in  the [.eslintrc](.esli
 
 ## Docker
 A third-party Docker container can be found [here](https://github.com/caktux/slackbridge/).
-
-## License
-
-(The MIT License)
-
-Copyright (c) 2015 Martin Ek <mail@ekmartin.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

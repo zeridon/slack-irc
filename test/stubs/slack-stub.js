@@ -1,39 +1,12 @@
-var util = require('util');
-var events = require('events');
-var sinon = require('sinon');
-var ChannelStub = require('./channel-stub');
+import { EventEmitter } from 'events';
+import DataStoreStub from './data-store-stub';
 
-function SlackStub() {
-  this.returnWrongStubInfo = false;
-}
-
-util.inherits(SlackStub, events.EventEmitter);
-
-SlackStub.prototype.getChannelStub = function() {
-  if (this.returnWrongStubInfo) return null;
-  return new ChannelStub();
-};
-
-SlackStub.prototype.getChannelByID = SlackStub.prototype.getChannelStub;
-SlackStub.prototype.getChannelGroupOrDMByName = SlackStub.prototype.getChannelStub;
-SlackStub.prototype.getChannelGroupOrDMByID = SlackStub.prototype.getChannelStub;
-
-SlackStub.prototype.getUserByID = function() {
-  if (this.returnWrongStubInfo) {
-    return {
-      name: 'nottheuser'
-    };
-  }
-
-  return {
-    name: 'testuser'
+export default function createSlackStub() {
+  const rtm = new EventEmitter();
+  rtm.dataStore = new DataStoreStub();
+  const web = {
+    chat: {}
   };
-};
 
-SlackStub.prototype.login = sinon.stub();
-
-SlackStub.prototype.resetStub = function() {
-  this.returnWrongStubInfo = false;
-};
-
-module.exports = SlackStub;
+  return { rtm, web };
+}

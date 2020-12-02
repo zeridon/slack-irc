@@ -1,13 +1,16 @@
 {
-  "extends": "airbnb/legacy",
-  "rules": {
-    "func-names": 0,
-    "vars-on-top": 0,
-    "id-length": 0,
-    "comma-dangle": [2, "never"]
-  },
+  "extends": "airbnb-base",
+  "parser": "babel-eslint",
   "env": {
     "mocha": true,
     "node": true
+  },
+  "rules": {
+    "global-require": 0,
+    "comma-dangle": 0,
+    "func-names": 0,
+    "import/no-extraneous-dependencies": [2, { "devDependencies": true }],
+    "import/prefer-default-export": 0,
+    "import/no-dynamic-require": 0
   }
 }
